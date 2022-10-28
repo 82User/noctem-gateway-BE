@@ -1,0 +1,76 @@
+server:
+  port: 8000
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://eureka:8761/eureka
+
+spring:
+  application:
+    name: gateway-service
+  cloud:
+    gateway:
+      routes:
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/user-service/**
+        - id: menu-service
+          uri: lb://menu-service
+          predicates:
+            - Path=/api/menu-service/**
+        - id: purchase-service
+          uri: lb://purchase-service
+          predicates:
+            - Path=/api/purchase-service/**
+        - id: store-service
+          uri: lb://store-service
+          predicates:
+            - Path=/api/store-service/**
+        - id: admin-service
+          uri: lb://admin-service
+          predicates:
+            - Path=/api/admin-service/**
+        - id: alert-service
+          uri: lb://alert-service
+          predicates:
+            - Path=/api/alert-service/**
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE # header 의 multi-value 설정
+      globalcors:
+        add-to-simple-url-handler-mapping: true
+        cors-configurations:
+          '[/**]':
+            allow-credentials: true
+            allowed-origin-patterns:
+              - "*"
+            exposed-headers:
+              - "*"
+            allowed-headers:
+              - "*"
+            allowed-methods:
+              - GET
+              - POST
+              - PUT
+              - PATCH
+              - DELETE
+              - HEAD
+              - OPTIONS
+    config:
+      enabled: false
+
+management:
+  endpoints:
+    web:
+      base-path: /api/gateway-service/actuator
+      exposure:
+        include: prometheus, metrics, health, refresh, busrefresh, httptrace
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: ${spring.application.name}
